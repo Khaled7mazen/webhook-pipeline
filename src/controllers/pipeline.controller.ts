@@ -44,3 +44,18 @@ export const getPipelineById = (req: Request, res: Response) => {
 
   res.json(pipeline);
 };
+
+
+export const deletePipeline = (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+
+  const index = pipelines.findIndex(p => p.id === id);
+
+  if (index === -1) {
+    return res.status(404).json({ error: "Pipeline not found" });
+  }
+
+  pipelines.splice(index, 1);
+
+  res.json({ message: "Pipeline deleted" });
+};
