@@ -28,3 +28,19 @@ export const createPipeline = (req: Request, res: Response) => {
 
   res.status(201).json(pipeline);
 };
+
+export const getPipelines = (req: Request, res: Response) => {
+  res.json(pipelines);
+};
+
+export const getPipelineById = (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+
+  const pipeline = pipelines.find(p => p.id === id);
+
+  if (!pipeline) {
+    return res.status(404).json({ error: "Pipeline not found" });
+  }
+
+  res.json(pipeline);
+};
