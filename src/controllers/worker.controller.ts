@@ -1,8 +1,9 @@
 import { jobs } from "./webhook.controller.js";
 import { pipelines } from "./pipeline.controller.js";
 import { processData } from "./processor.controller.js";
+import { deliverJobs } from "./delivery.controller.js";
 
-export const processPendingJobs = () => {
+export const processPendingJobs = async() => {
   jobs.forEach(job => {
     if (job.status === "pending") {
       job.status = "processing";
@@ -17,4 +18,7 @@ export const processPendingJobs = () => {
       }
     }
   });
+
+    await deliverJobs();
+
 };
