@@ -8,6 +8,9 @@ export const deliverJobs = async () => {
       const pipeline = pipelines.find(p => p.id === job.pipelineId);
       if (!pipeline) continue;
 
+
+      let allDelivered = true;
+
       for (const url of pipeline.subscribers) {
         try {
           const res = await fetch(url, {
@@ -20,11 +23,12 @@ export const deliverJobs = async () => {
           console.log(`Job ${job.id} delivered to ${url}`);
         } catch (err) {
           console.error(`Error delivering job ${job.id} to ${url}:`, err);
+          allDelivered = false;
           // retry logic 
         }
       }
 
-      job.delivered = true;
+      job.delivered = allDelivered;
     }
   }
 };
