@@ -4,6 +4,5 @@ import { receiveWebhook, getJobs } from "../controllers/webhook.controller.js";
 const router = Router();
 
 router.post("/:pipelineId", receiveWebhook);
-router.get("/", getJobs);
 
 export default router;

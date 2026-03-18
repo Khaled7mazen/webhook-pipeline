@@ -6,6 +6,7 @@ export type Job = {
   pipelineId: number;
   payload: any;
   status: "pending" | "processing" | "done" | "failed";
+  delivered?: boolean;
 };
 
 export let jobs: Job[] = [];
@@ -23,13 +24,10 @@ export const receiveWebhook = (req: Request, res: Response) => {
     pipelineId,
     payload,
     status: "pending",
+    delivered: false,
   };
 
   jobs.push(job);
 
   res.status(201).json({ message: "Webhook received", job });
-};
-
-export const getJobs = (req: Request, res: Response) => {
-  res.json(jobs);
 };
