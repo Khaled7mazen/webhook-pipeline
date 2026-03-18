@@ -59,3 +59,8 @@ export const deletePipeline = (req: Request, res: Response) => {
 
   res.json({ message: "Pipeline deleted" });
 };
+
+
+
+export { pipelines };
+
