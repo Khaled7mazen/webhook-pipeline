@@ -20,4 +20,4 @@ app.listen(3000, () => {
   console.log("Server started on port 3000");
 });
 
-//psql postgres://postgres:postgres@localhost:5432/postgres
+//psql postgres://postgres:postgres@localhost:5432/webhook_pipeline
