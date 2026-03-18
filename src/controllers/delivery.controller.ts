@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import { jobs } from "./webhook.controller.js";
+import { jobs } from "../models/job.model.js";
 import { pipelines } from "./pipeline.controller.js";
 
 export const deliverJobs = async () => {

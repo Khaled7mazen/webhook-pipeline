@@ -1,4 +1,4 @@
-import { jobs } from "./webhook.controller.js";
+import { jobs } from "../models/job.model.js";
 import { pipelines } from "./pipeline.controller.js";
 import { processData } from "./processor.controller.js";
 import { deliverJobs } from "./delivery.controller.js";
