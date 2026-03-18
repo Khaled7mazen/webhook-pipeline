@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { jobs } from "../models/job.model.js";
+import { jobs } from "../models/job.store.js";
 
-export const getAllJobs = (req: Request, res: Response) => {
-  res.json(jobs);
+export const getAllJobs = (_req: Request, res: Response) => {
+  return res.json(jobs);
 };
 
 export const getJobById = (req: Request, res: Response) => {
@@ -14,5 +14,5 @@ export const getJobById = (req: Request, res: Response) => {
     return res.status(404).json({ error: "Job not found" });
   }
 
-  res.json(job);
+  return res.json(job);
 };

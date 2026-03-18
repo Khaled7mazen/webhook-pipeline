@@ -1,55 +1,60 @@
 import { Request, Response } from "express";
-
-type Pipeline = {
-  id: number;
-  name: string;
-  action: string;
-  subscribers: string[];
-};
-
-let pipelines: Pipeline[] = [];
-let currentId = 1;
+import { pipelines, getNextPipelineId } from "../models/pipeline.store.js";
+import type { Pipeline, PipelineAction } from "../models/pipeline.model.js";
 
 export const createPipeline = (req: Request, res: Response) => {
   const { name, action, subscribers } = req.body;
 
   if (!name || !action) {
-    return res.status(400).json({ error: "name and action required" });
+    return res.status(400).json({ error: "name and action are required" });
+  }
+
+  const allowedActions: PipelineAction[] = [
+    "uppercase",
+    "add_timestamp",
+    "filter_field",
+  ];
+
+  if (!allowedActions.includes(action)) {
+    return res.status(400).json({ error: "invalid action type" });
+  }
+
+  if (subscribers && !Array.isArray(subscribers)) {
+    return res.status(400).json({ error: "subscribers must be an array" });
   }
 
   const pipeline: Pipeline = {
-    id: currentId++,
+    id: getNextPipelineId(),
     name,
     action,
-    subscribers: subscribers || [],
+    subscribers: subscribers ?? [],
   };
 
   pipelines.push(pipeline);
 
-  res.status(201).json(pipeline);
+  return res.status(201).json(pipeline);
 };
 
-export const getPipelines = (req: Request, res: Response) => {
-  res.json(pipelines);
+export const getPipelines = (_req: Request, res: Response) => {
+  return res.json(pipelines);
 };
 
 export const getPipelineById = (req: Request, res: Response) => {
   const id = Number(req.params.id);
 
-  const pipeline = pipelines.find(p => p.id === id);
+  const pipeline = pipelines.find((p) => p.id === id);
 
   if (!pipeline) {
     return res.status(404).json({ error: "Pipeline not found" });
   }
 
-  res.json(pipeline);
+  return res.json(pipeline);
 };
-
 
 export const deletePipeline = (req: Request, res: Response) => {
   const id = Number(req.params.id);
 
-  const index = pipelines.findIndex(p => p.id === id);
+  const index = pipelines.findIndex((p) => p.id === id);
 
   if (index === -1) {
     return res.status(404).json({ error: "Pipeline not found" });
@@ -57,10 +62,5 @@ export const deletePipeline = (req: Request, res: Response) => {
 
   pipelines.splice(index, 1);
 
-  res.json({ message: "Pipeline deleted" });
+  return res.json({ message: "Pipeline deleted" });
 };
-
-
-
-export { pipelines };
-

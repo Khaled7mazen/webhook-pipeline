@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
-import { pipelines } from "./pipeline.controller.js";
-import { jobs, Job, getNextJobId } from "../models/job.model.js";
+import { pipelines } from "../models/pipeline.store.js";
+import { jobs, getNextJobId } from "../models/job.store.js";
+import type { Job } from "../models/job.model.js";
 
 export const receiveWebhook = (req: Request, res: Response) => {
   const pipelineId = Number(req.params.pipelineId);
@@ -22,5 +23,8 @@ export const receiveWebhook = (req: Request, res: Response) => {
 
   jobs.push(job);
 
-  res.status(201).json({ message: "Webhook received", job });
+  return res.status(201).json({
+    message: "Webhook received",
+    job,
+  });
 };
