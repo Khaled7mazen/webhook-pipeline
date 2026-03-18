@@ -1,26 +1,19 @@
 import { Request, Response } from "express";
-import { pipelines } from "../controllers/pipeline.controller.js";
-
-export type Job = {
-  id: number;
-  pipelineId: number;
-  payload: any;
-  status: "pending" | "processing" | "done" | "failed";
-  delivered?: boolean;
-};
-
-export let jobs: Job[] = [];
-let jobIdCounter = 1;
+import { pipelines } from "./pipeline.controller.js";
+import { jobs, Job, getNextJobId } from "../models/job.model.js";
 
 export const receiveWebhook = (req: Request, res: Response) => {
   const pipelineId = Number(req.params.pipelineId);
   const payload = req.body;
 
-  const pipeline = pipelines.find(p => p.id === pipelineId);
-  if (!pipeline) return res.status(404).json({ error: "Pipeline not found" });
+  const pipeline = pipelines.find((p) => p.id === pipelineId);
+
+  if (!pipeline) {
+    return res.status(404).json({ error: "Pipeline not found" });
+  }
 
   const job: Job = {
-    id: jobIdCounter++,
+    id: getNextJobId(),
     pipelineId,
     payload,
     status: "pending",

@@ -7,5 +7,6 @@ export type Job = {
 };
 
 export let jobs: Job[] = [];
-export let currentJobId = 1;
+let currentJobId = 1;
 
+export const getNextJobId = () => currentJobId++;
