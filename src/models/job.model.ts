@@ -1,12 +1,9 @@
+export type JobStatus = "pending" | "processing" | "done" | "failed";
+
 export type Job = {
   id: number;
   pipelineId: number;
-  payload: any;
-  status: "pending" | "processing" | "done" | "failed";
-  delivered?: boolean;
+  payload: unknown;
+  status: JobStatus;
+  delivered: boolean;
 };
-
-export let jobs: Job[] = [];
-let currentJobId = 1;
-
-export const getNextJobId = () => currentJobId++;
