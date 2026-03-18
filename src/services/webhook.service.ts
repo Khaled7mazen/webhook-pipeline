@@ -1,23 +1,18 @@
 import { getPipelineByIdService } from "./pipeline.service.js";
-import { jobs, getNextJobId } from "../models/job.store.js";
-import type { Job } from "../models/job.model.js";
+import { createJobRepository } from "../repositories/job.repository.js";
 
-export const createWebhookJobService = (pipelineId: number, payload: unknown) => {
-  const pipeline = getPipelineByIdService(pipelineId);
+export const createWebhookJobService = async (
+  pipelineId: number,
+  payload: unknown
+) => {
+  const pipeline = await getPipelineByIdService(pipelineId);
 
   if (!pipeline) {
     return null;
   }
 
-  const job: Job = {
-    id: getNextJobId(),
+  return createJobRepository({
     pipelineId,
     payload,
-    status: "pending",
-    delivered: false,
-  };
-
-  jobs.push(job);
-
-  return job;
+  });
 };

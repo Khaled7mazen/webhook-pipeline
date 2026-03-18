@@ -1,5 +1,10 @@
-import { pipelines, getNextPipelineId } from "../models/pipeline.store.js";
-import type { Pipeline, PipelineAction } from "../models/pipeline.model.js";
+import type { PipelineAction } from "../models/pipeline.model.js";
+import {
+  createPipelineRepository,
+  deletePipelineRepository,
+  getAllPipelinesRepository,
+  getPipelineByIdRepository,
+} from "../repositories/pipeline.repository.js";
 
 const allowedActions: PipelineAction[] = [
   "uppercase",
@@ -7,7 +12,7 @@ const allowedActions: PipelineAction[] = [
   "filter_field",
 ];
 
-export const createPipelineService = (data: {
+export const createPipelineService = async (data: {
   name: string;
   action: string;
   subscribers?: string[];
@@ -26,31 +31,21 @@ export const createPipelineService = (data: {
     throw new Error("subscribers must be an array");
   }
 
-  const pipeline: Pipeline = {
-    id: getNextPipelineId(),
+  return createPipelineRepository({
     name,
     action: action as PipelineAction,
     subscribers: subscribers ?? [],
-  };
-
-  pipelines.push(pipeline);
-
-  return pipeline;
+  });
 };
 
-export const getAllPipelinesService = () => pipelines;
-
-export const getPipelineByIdService = (id: number) => {
-  return pipelines.find((p) => p.id === id) ?? null;
+export const getAllPipelinesService = async () => {
+  return getAllPipelinesRepository();
 };
 
-export const deletePipelineService = (id: number) => {
-  const index = pipelines.findIndex((p) => p.id === id);
+export const getPipelineByIdService = async (id: number) => {
+  return getPipelineByIdRepository(id);
+};
 
-  if (index === -1) {
-    return false;
-  }
-
-  pipelines.splice(index, 1);
-  return true;
+export const deletePipelineService = async (id: number) => {
+  return deletePipelineRepository(id);
 };

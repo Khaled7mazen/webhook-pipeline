@@ -1,14 +1,16 @@
 import fetch from "node-fetch";
-import { jobs } from "../models/job.store.js";
-import { pipelines } from "../models/pipeline.store.js";
+import { getPipelineByIdService } from "./pipeline.service.js";
+import {
+  getCompletedUndeliveredJobsRepository,
+  markJobDeliveredRepository,
+} from "../repositories/job.repository.js";
+import { createDeliveryAttemptRepository } from "../repositories/delivery.repository.js";
 
 export const deliverJobs = async () => {
-  for (const job of jobs) {
-    if (job.status !== "done" || job.delivered) {
-      continue;
-    }
+  const jobs = await getCompletedUndeliveredJobsRepository();
 
-    const pipeline = pipelines.find((p) => p.id === job.pipelineId);
+  for (const job of jobs) {
+    const pipeline = await getPipelineByIdService(job.pipelineId);
 
     if (!pipeline) {
       continue;
@@ -30,13 +32,27 @@ export const deliverJobs = async () => {
           throw new Error(`Failed to deliver to ${url}`);
         }
 
-        console.log(`Job ${job.id} delivered to ${url}`);
+        await createDeliveryAttemptRepository({
+          jobId: job.id,
+          subscriberUrl: url,
+          status: "success",
+          attemptCount: 1,
+        });
       } catch (error) {
-        console.error(`Error delivering job ${job.id} to ${url}:`, error);
         allDelivered = false;
+
+        await createDeliveryAttemptRepository({
+          jobId: job.id,
+          subscriberUrl: url,
+          status: "failed",
+          attemptCount: 1,
+          lastError: error instanceof Error ? error.message : "Unknown error",
+        });
       }
     }
 
-    job.delivered = allDelivered;
+    if (allDelivered) {
+      await markJobDeliveredRepository(job.id);
+    }
   }
 };

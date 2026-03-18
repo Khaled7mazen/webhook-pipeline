@@ -6,9 +6,9 @@ import {
   getPipelineByIdService,
 } from "../services/pipeline.service.js";
 
-export const createPipeline = (req: Request, res: Response) => {
+export const createPipeline = async (req: Request, res: Response) => {
   try {
-    const pipeline = createPipelineService(req.body);
+    const pipeline = await createPipelineService(req.body);
     return res.status(201).json(pipeline);
   } catch (error) {
     return res.status(400).json({
@@ -17,13 +17,14 @@ export const createPipeline = (req: Request, res: Response) => {
   }
 };
 
-export const getPipelines = (_req: Request, res: Response) => {
-  return res.json(getAllPipelinesService());
+export const getPipelines = async (_req: Request, res: Response) => {
+  const pipelines = await getAllPipelinesService();
+  return res.json(pipelines);
 };
 
-export const getPipelineById = (req: Request, res: Response) => {
+export const getPipelineById = async (req: Request, res: Response) => {
   const id = Number(req.params.id);
-  const pipeline = getPipelineByIdService(id);
+  const pipeline = await getPipelineByIdService(id);
 
   if (!pipeline) {
     return res.status(404).json({ error: "Pipeline not found" });
@@ -32,9 +33,9 @@ export const getPipelineById = (req: Request, res: Response) => {
   return res.json(pipeline);
 };
 
-export const deletePipeline = (req: Request, res: Response) => {
+export const deletePipeline = async (req: Request, res: Response) => {
   const id = Number(req.params.id);
-  const deleted = deletePipelineService(id);
+  const deleted = await deletePipelineService(id);
 
   if (!deleted) {
     return res.status(404).json({ error: "Pipeline not found" });

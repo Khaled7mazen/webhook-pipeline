@@ -1,14 +1,17 @@
 import { Request, Response } from "express";
-import { jobs } from "../models/job.store.js";
+import {
+  getAllJobsRepository,
+  getJobByIdRepository,
+} from "../repositories/job.repository.js";
 
-export const getAllJobs = (_req: Request, res: Response) => {
+export const getAllJobs = async (_req: Request, res: Response) => {
+  const jobs = await getAllJobsRepository();
   return res.json(jobs);
 };
 
-export const getJobById = (req: Request, res: Response) => {
+export const getJobById = async (req: Request, res: Response) => {
   const id = Number(req.params.id);
-
-  const job = jobs.find((j) => j.id === id);
+  const job = await getJobByIdRepository(id);
 
   if (!job) {
     return res.status(404).json({ error: "Job not found" });
