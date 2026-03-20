@@ -53,3 +53,39 @@ export const createDeliveryAttemptRepository = async (input: {
     deliveredAt: input.status === "success" ? new Date() : null,
   });
 };
+
+
+export type DeliveryAttempt = {
+  id: number;
+  jobId: number;
+  subscriberUrl: string;
+  status: string;
+  attemptCount: number;
+  lastError: string | null;
+  deliveredAt: Date | null;
+  createdAt: Date;
+};
+
+const mapDeliveryRow = (
+  row: typeof deliveriesTable.$inferSelect
+): DeliveryAttempt => ({
+  id: row.id,
+  jobId: row.jobId,
+  subscriberUrl: row.subscriberUrl,
+  status: row.status,
+  attemptCount: row.attemptCount,
+  lastError: row.lastError,
+  deliveredAt: row.deliveredAt,
+  createdAt: row.createdAt,
+});
+
+export const getDeliveriesByJobIdRepository = async (
+  jobId: number
+): Promise<DeliveryAttempt[]> => {
+  const deliveries = await db
+    .select()
+    .from(deliveriesTable)
+    .where(eq(deliveriesTable.jobId, jobId));
+
+  return deliveries.map(mapDeliveryRow);
+};
