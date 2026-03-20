@@ -1,8 +1,7 @@
-import { and, eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { jobsTable } from "../db/schema.js";
 import type { Job, JobStatus } from "../models/job.model.js";
-import { sql } from "drizzle-orm";
 
 const mapJobRow = (row: typeof jobsTable.$inferSelect): Job => ({
   id: row.id,
@@ -55,61 +54,6 @@ export const getJobByIdRepository = async (id: number): Promise<Job | null> => {
   return job ? mapJobRow(job) : null;
 };
 
-export const getPendingJobsRepository = async (): Promise<Job[]> => {
-  const jobs = await db
-    .select()
-    .from(jobsTable)
-    .where(eq(jobsTable.status, "pending"));
-
-  return jobs.map(mapJobRow);
-};
-
-export const getCompletedUndeliveredJobsRepository = async (): Promise<Job[]> => {
-  const jobs = await db
-    .select()
-    .from(jobsTable)
-    .where(and(eq(jobsTable.status, "done"), eq(jobsTable.delivered, false)));
-
-  return jobs.map(mapJobRow);
-};
-
-export const updateJobStatusRepository = async (
-  id: number,
-  status: JobStatus,
-  payload?: unknown
-): Promise<void> => {
-  if (payload !== undefined) {
-    await db
-      .update(jobsTable)
-      .set({
-        status,
-        payload,
-        updatedAt: new Date(),
-      })
-      .where(eq(jobsTable.id, id));
-
-    return;
-  }
-
-  await db
-    .update(jobsTable)
-    .set({
-      status,
-      updatedAt: new Date(),
-    })
-    .where(eq(jobsTable.id, id));
-};
-
-export const markJobDeliveredRepository = async (id: number): Promise<void> => {
-  await db
-    .update(jobsTable)
-    .set({
-      delivered: true,
-      updatedAt: new Date(),
-    })
-    .where(eq(jobsTable.id, id));
-};
-
 export const claimNextJobRepository = async (
   workerId: string
 ): Promise<Job | null> => {
@@ -134,14 +78,14 @@ export const claimNextJobRepository = async (
     RETURNING *;
   `);
 
-  const row = result.rows[0];
+  const row = result.rows[0] as typeof jobsTable.$inferSelect | undefined;
+
   if (!row) {
     return null;
   }
 
-  return mapJobRow(row as typeof jobsTable.$inferSelect);
+  return mapJobRow(row);
 };
-
 
 export const markJobDoneRepository = async (
   id: number,
@@ -161,7 +105,6 @@ export const markJobDoneRepository = async (
     })
     .where(eq(jobsTable.id, id));
 };
-
 
 export const scheduleJobRetryRepository = async (
   id: number,
@@ -185,7 +128,6 @@ export const scheduleJobRetryRepository = async (
     .where(eq(jobsTable.id, id));
 };
 
-
 export const markJobFailedRepository = async (
   id: number,
   attempts: number,
@@ -204,7 +146,6 @@ export const markJobFailedRepository = async (
     .where(eq(jobsTable.id, id));
 };
 
-
 export const releaseJobLockRepository = async (id: number): Promise<void> => {
   await db
     .update(jobsTable)
@@ -215,4 +156,3 @@ export const releaseJobLockRepository = async (id: number): Promise<void> => {
     })
     .where(eq(jobsTable.id, id));
 };
-

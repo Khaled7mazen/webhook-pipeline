@@ -24,6 +24,7 @@ const deliverToSubscribers = async (
 ): Promise<void> => {
   for (const url of subscribers) {
     const alreadyDelivered = await hasSuccessfulDeliveryRepository(jobId, url);
+
     if (alreadyDelivered) {
       continue;
     }
@@ -50,7 +51,7 @@ const deliverToSubscribers = async (
         status: "success",
         attemptCount: nextAttempt,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       await createDeliveryAttemptRepository({
         jobId,
         subscriberUrl: url,
@@ -85,7 +86,7 @@ export const runNextJob = async (workerId: string): Promise<boolean> => {
     await markJobDoneRepository(job.id, processedPayload);
 
     return true;
-  } catch (error) {
+  } catch (error: unknown) {
     const nextAttempts = job.attempts + 1;
     const message =
       error instanceof Error ? error.message : "Unknown processing error";
