@@ -29,9 +29,22 @@ export const jobsTable = pgTable("jobs", {
   pipelineId: integer("pipeline_id")
     .notNull()
     .references(() => pipelinesTable.id, { onDelete: "cascade" }),
-  payload: jsonb("payload").notNull(),
-  status: text("status").notNull(),
+
+  originalPayload: jsonb("original_payload").notNull(),
+  processedPayload: jsonb("processed_payload"),
+
+  status: text("status").notNull(), // pending | processing | retrying | done | failed
   delivered: boolean("delivered").notNull().default(false),
+
+  attempts: integer("attempts").notNull().default(0),
+  maxAttempts: integer("max_attempts").notNull().default(3),
+
+  nextRunAt: timestamp("next_run_at").notNull().defaultNow(),
+  lockedAt: timestamp("locked_at"),
+  lockedBy: text("locked_by"),
+  lastError: text("last_error"),
+  processedAt: timestamp("processed_at"),
+
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
