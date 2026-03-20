@@ -17,6 +17,8 @@ export const createPipeline = async (req: Request, res: Response) => {
   }
 };
 
+
+
 export const getPipelines = async (_req: Request, res: Response) => {
   const pipelines = await getAllPipelinesService();
   return res.json(pipelines);
@@ -24,6 +26,11 @@ export const getPipelines = async (_req: Request, res: Response) => {
 
 export const getPipelineById = async (req: Request, res: Response) => {
   const id = Number(req.params.id);
+
+  if (Number.isNaN(id)) {
+    return res.status(400).json({ error: "Invalid pipeline id" });
+  }
+
   const pipeline = await getPipelineByIdService(id);
 
   if (!pipeline) {
@@ -35,6 +42,11 @@ export const getPipelineById = async (req: Request, res: Response) => {
 
 export const deletePipeline = async (req: Request, res: Response) => {
   const id = Number(req.params.id);
+
+  if (Number.isNaN(id)) {
+    return res.status(400).json({ error: "Invalid pipeline id" });
+  }
+  
   const deleted = await deletePipelineService(id);
 
   if (!deleted) {
