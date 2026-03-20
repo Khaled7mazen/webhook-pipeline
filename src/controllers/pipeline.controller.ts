@@ -4,6 +4,7 @@ import {
   deletePipelineService,
   getAllPipelinesService,
   getPipelineByIdService,
+  updatePipelineService
 } from "../services/pipeline.service.js";
 
 export const createPipeline = async (req: Request, res: Response) => {
@@ -46,7 +47,7 @@ export const deletePipeline = async (req: Request, res: Response) => {
   if (Number.isNaN(id)) {
     return res.status(400).json({ error: "Invalid pipeline id" });
   }
-  
+
   const deleted = await deletePipelineService(id);
 
   if (!deleted) {
@@ -54,4 +55,27 @@ export const deletePipeline = async (req: Request, res: Response) => {
   }
 
   return res.json({ message: "Pipeline deleted" });
+};
+
+
+export const updatePipeline = async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+
+  if (Number.isNaN(id)) {
+    return res.status(400).json({ error: "Invalid pipeline id" });
+  }
+
+  try {
+    const pipeline = await updatePipelineService(id, req.body);
+
+    if (!pipeline) {
+      return res.status(404).json({ error: "Pipeline not found" });
+    }
+
+    return res.json(pipeline);
+  } catch (error) {
+    return res.status(400).json({
+      error: error instanceof Error ? error.message : "Invalid request",
+    });
+  }
 };
