@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "build": "npx tsc",
-    "start": "node dist/app.js",
-    "dev": "npx tsc && node dist/app.js",
+    "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "worker:start": "node dist/worker.js",
+    "worker:dev": "tsx watch src/worker.ts"
   },
   "keywords": [],
   "author": "",
