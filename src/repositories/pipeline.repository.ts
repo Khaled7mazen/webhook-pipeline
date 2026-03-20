@@ -90,3 +90,72 @@ export const deletePipelineRepository = async (id: number): Promise<boolean> => 
 
   return deleted.length > 0;
 };
+
+
+type UpdatePipelineInput = {
+  id: number;
+  name?: string;
+  action?: PipelineAction;
+  subscribers?: string[];
+};
+
+export const updatePipelineRepository = async (
+  input: UpdatePipelineInput
+): Promise<Pipeline | null> => {
+  return db.transaction(async (tx) => {
+    const existingPipeline = await tx
+      .select()
+      .from(pipelinesTable)
+      .where(eq(pipelinesTable.id, input.id));
+
+    if (existingPipeline.length === 0) {
+      return null;
+    }
+
+    if (input.name !== undefined || input.action !== undefined) {
+      await tx
+        .update(pipelinesTable)
+        .set({
+          ...(input.name !== undefined ? { name: input.name } : {}),
+          ...(input.action !== undefined ? { action: input.action } : {}),
+        })
+        .where(eq(pipelinesTable.id, input.id));
+    }
+
+    if (input.subscribers !== undefined) {
+      await tx
+        .delete(subscribersTable)
+        .where(eq(subscribersTable.pipelineId, input.id));
+
+      if (input.subscribers.length > 0) {
+        await tx.insert(subscribersTable).values(
+          input.subscribers.map((url) => ({
+            pipelineId: input.id,
+            url,
+          }))
+        );
+      }
+    }
+
+    const [pipeline] = await tx
+      .select()
+      .from(pipelinesTable)
+      .where(eq(pipelinesTable.id, input.id));
+
+    const subscribers = await tx
+      .select()
+      .from(subscribersTable)
+      .where(eq(subscribersTable.pipelineId, input.id));
+
+    if (!pipeline) {
+      return null;
+    }
+
+    return {
+      id: pipeline.id,
+      name: pipeline.name,
+      action: pipeline.action as PipelineAction,
+      subscribers: subscribers.map((subscriber) => subscriber.url),
+    };
+  });
+};
