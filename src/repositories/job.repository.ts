@@ -75,7 +75,20 @@ export const claimNextJobRepository = async (
       locked_by = ${workerId},
       updated_at = NOW()
     WHERE id = (SELECT id FROM next_job)
-    RETURNING *;
+    RETURNING
+      id,
+      pipeline_id AS "pipelineId",
+      original_payload AS "originalPayload",
+      processed_payload AS "processedPayload",
+      status,
+      delivered,
+      attempts,
+      max_attempts AS "maxAttempts",
+      next_run_at AS "nextRunAt",
+      locked_at AS "lockedAt",
+      locked_by AS "lockedBy",
+      last_error AS "lastError",
+      processed_at AS "processedAt";
   `);
 
   const row = result.rows[0] as typeof jobsTable.$inferSelect | undefined;
