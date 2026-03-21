@@ -1,0 +1,75 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: webhook-pipeline-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: webhook_pipeline
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d webhook_pipeline"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: webhook-pipeline-migrate
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgres://postgres:postgres@db:5432/webhook_pipeline
+      WORKER_POLL_INTERVAL_MS: 3000
+      WORKER_ID: worker-1
+    command: sh -c "npm run db:push"
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: webhook-pipeline-app
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgres://postgres:postgres@db:5432/webhook_pipeline
+      WORKER_POLL_INTERVAL_MS: 3000
+      WORKER_ID: worker-1
+    ports:
+      - "3000:3000"
+    command: sh -c "npm run start"
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: webhook-pipeline-worker
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgres://postgres:postgres@db:5432/webhook_pipeline
+      WORKER_POLL_INTERVAL_MS: 3000
+      WORKER_ID: worker-1
+    command: sh -c "npm run worker:start"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
