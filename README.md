@@ -26,7 +26,7 @@ The system is designed with **asynchronous processing**, ensuring scalability an
 - ✅ Delivery tracking (per subscriber)
 - ✅ PostgreSQL-backed job queue
 - ✅ Dockerized setup 
-- ✅ CI pipeline using GitHub Actions
+- ✅ CI/CD pipeline using GitHub Actions
 
 ---
 
@@ -108,7 +108,7 @@ Stores:
 - PostgreSQL
 - Drizzle ORM
 - Docker & Docker Compose
-- GitHub Actions (CI)
+- GitHub Actions (CI/  CD)
 
 ---
 
@@ -130,9 +130,6 @@ docker compose up --build
 
 ---
 
-## 🔌 API Endpoints :
-
-```md
 ## 🔌 API Endpoints
 
 ### Pipelines
@@ -171,17 +168,22 @@ Docker Compose is used to run the entire system with a single command, ensuring 
 
 ---
 
-## ⚙️ CI Pipeline
+## ⚙️ CI/CD Pipeline
 
-The project includes a GitHub Actions CI pipeline that runs on push and pull requests.
+The project uses GitHub Actions for CI/CD.
 
-It performs:
-- Lint checks
+### CI
+The CI workflow runs on push and pull requests and performs:
+- lint checks
 - TypeScript build
-- Tests
 - PostgreSQL service setup
-- Database migrations
+- database migrations
 - Docker image build
+
+### CD
+The CD workflow runs after CI succeeds on the `main` branch and:
+- builds the Docker image
+- publishes it to GitHub Container Registry (GHCR)
 
 ---
 
