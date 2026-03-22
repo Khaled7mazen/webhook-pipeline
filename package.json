@@ -12,8 +12,7 @@
     "db:push": "drizzle-kit push",
     "worker:start": "node dist/worker.js",
     "worker:dev": "tsx watch src/worker.ts",
-    "lint": "tsc --noEmit",
-    "test": "echo \"No tests yet\""
+    "lint": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
