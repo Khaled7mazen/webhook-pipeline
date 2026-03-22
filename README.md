@@ -118,3 +118,76 @@ Stores:
 npm install
 npm run build
 npm run start
+
+---
+
+## 🐳 Running with Docker
+
+Run the full system using Docker:
+
+```bash
+docker compose up --build
+
+---
+
+## 🔌 API Endpoints :
+
+```md
+## 🔌 API Endpoints
+
+### Pipelines
+POST /pipelines  
+GET /pipelines  
+GET /pipelines/:id  
+PATCH /pipelines/:id  
+DELETE /pipelines/:id  
+
+### Webhooks
+POST /webhooks/:pipelineId  
+
+### Jobs
+GET /jobs  
+GET /jobs/:id  
+GET /jobs/:id/deliveries
+
+---
+
+## 🧠 Design Decisions
+
+### PostgreSQL as Queue
+I used PostgreSQL instead of Redis/BullMQ to simplify the system and reduce external dependencies, while still supporting job scheduling and locking.
+
+### Background Worker
+The worker is separated from the API to ensure asynchronous processing and avoid blocking incoming requests.
+
+### Delivery Tracking
+Each delivery attempt is stored to provide visibility into success/failure and enable debugging.
+
+### Retry Strategy
+Retry logic is implemented using attempts count and nextRunAt scheduling to handle failures gracefully.
+
+### Docker Compose
+Docker Compose is used to run the entire system with a single command, ensuring consistent environments.
+
+---
+
+## ⚙️ CI Pipeline
+
+The project includes a GitHub Actions CI pipeline that runs on push and pull requests.
+
+It performs:
+- Lint checks
+- TypeScript build
+- Tests
+- PostgreSQL service setup
+- Database migrations
+- Docker image build
+
+---
+
+## 🔁 Retry Logic
+
+- Each job has a maximum number of attempts
+- Failed jobs are retried with delay
+- Delay increases with each attempt
+- After max attempts, job is marked as failed
