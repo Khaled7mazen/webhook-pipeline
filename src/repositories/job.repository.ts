@@ -59,15 +59,24 @@ export const claimNextJobRepository = async (
 ): Promise<Job | null> => {
   const result = await db.execute(sql`
     WITH next_job AS (
-      SELECT id
-      FROM jobs
-      WHERE status IN ('pending', 'retrying')
+    SELECT id
+    FROM jobs
+    WHERE (
+      (
+        status IN ('pending', 'retrying')
         AND next_run_at <= NOW()
-        AND locked_at IS NULL
-      ORDER BY created_at ASC
-      FOR UPDATE SKIP LOCKED
-      LIMIT 1
+        AND (locked_at IS NULL OR locked_at < NOW() - INTERVAL '5 minutes')
+      )
+      OR
+      (
+        status = 'processing'
+        AND locked_at < NOW() - INTERVAL '5 minutes'
+      )
     )
+    ORDER BY created_at ASC
+    FOR UPDATE SKIP LOCKED
+    LIMIT 1
+  )
     UPDATE jobs
     SET
       status = 'processing',
