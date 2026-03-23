@@ -119,6 +119,15 @@ npm install
 npm run build
 npm run start
 
+Apply database schema:
+npm run db:push
+
+Run the API server:
+npm run dev
+
+Run the worker in a separate terminal
+npm run worker:dev
+
 ---
 
 ## 🐳 Running with Docker
@@ -147,24 +156,43 @@ GET /jobs
 GET /jobs/:id  
 GET /jobs/:id/deliveries
 
+Example Usage
+Create a pipeline:
+
+curl -X POST http://localhost:3000/pipelines \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Uppercase Pipeline",
+    "action": "uppercase",
+    "subscribers": ["http://localhost:4000/test"]
+  }'
+
+Send a webhook
+
+curl -X POST http://localhost:3000/webhooks/1 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "hello world"
+  }'
+
 ---
 
 ## 🧠 Design Decisions
 
-### PostgreSQL as Queue
-I used PostgreSQL instead of Redis/BullMQ to simplify the system and reduce external dependencies, while still supporting job scheduling and locking.
+### PostgreSQL as a Queue
+I used PostgreSQL instead of a dedicated queue system such as Redis/BullMQ to reduce infrastructure complexity and keep the project aligned with the assignment stack.
+
+### Separation of Concerns
+The codebase is split into controllers, services, repositories, models, and database schema files. This keeps responsibilities clear and improves maintainability.
 
 ### Background Worker
-The worker is separated from the API to ensure asynchronous processing and avoid blocking incoming requests.
+Webhook ingestion is intentionally lightweight. The API stores jobs only, while the worker handles processing and delivery asynchronously.
 
 ### Delivery Tracking
-Each delivery attempt is stored to provide visibility into success/failure and enable debugging.
+Each delivery attempt is stored in the database so job history can be inspected and successful deliveries can be skipped on retries.
 
 ### Retry Strategy
-Retry logic is implemented using attempts count and nextRunAt scheduling to handle failures gracefully.
-
-### Docker Compose
-Docker Compose is used to run the entire system with a single command, ensuring consistent environments.
+Retries are implemented using attempts, maxAttempts, and nextRunAt. Failed jobs are rescheduled with increasing delay until they either succeed or reach the maximum retry limit.
 
 ---
 
@@ -174,16 +202,15 @@ The project uses GitHub Actions for CI/CD.
 
 ### CI
 The CI workflow runs on push and pull requests and performs:
-- lint checks
+- dependency installation
+- type checking
 - TypeScript build
 - PostgreSQL service setup
 - database migrations
 - Docker image build
 
 ### CD
-The CD workflow runs after CI succeeds on the `main` branch and:
-- builds the Docker image
-- publishes it to GitHub Container Registry (GHCR)
+The CD workflow runs after CI succeeds on the main branch and publishes the Docker image to GitHub Container Registry (GHCR).
 
 ---
 
@@ -193,3 +220,11 @@ The CD workflow runs after CI succeeds on the `main` branch and:
 - Failed jobs are retried with delay
 - Delay increases with each attempt
 - After max attempts, job is marked as failed
+
+---
+
+## 🦾  Future Improvements
+
+pagination and filtering can be added to jobs APIs
+authentication and webhook signature verification can be added
+rate limiting and observability/metrics can be added
